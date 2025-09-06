@@ -16,15 +16,13 @@ MAX_FAVS = 5  # how many favourites to keep
 InGameMenu.i = InGameMenu.p = 0
 _original_connect = bs.connect_to_party
 
-# Save a server to favourites and refresh main menu
+# Save a server to favourites
 def save_favourite(name, ip, port):
     global favourites
     new_entry = {"name": name, "ip": ip, "port": port}
     if new_entry not in favourites:
         favourites.append(new_entry)
         favourites = favourites[-MAX_FAVS:]
-        # Force refresh main menu so buttons appear immediately
-        bui.app.ui_v1.set_main_menu_window(MainMenu().get_root_widget())
 
 # Reconnect function
 def reconnect(address, port=43210, print_progress=False):
@@ -59,12 +57,17 @@ def hook_ingame(func):
         return func(self, *args, **kwargs)
     return wrapper
 
-# Add favourites to main menu
+# Always draw favourites dynamically in main menu
 def hook_mainmenu(func):
     def wrapper(self, *args, **kwargs):
+        # First run the original menu build
+        result = func(self, *args, **kwargs)
+
+        # Then dynamically add favourites every time menu is shown
         root = self._root_widget
         start_x = 100
         y = self._height - 100
+
         for fav in favourites:
             z(
                 parent=root,
@@ -75,7 +78,8 @@ def hook_mainmenu(func):
                 position=(start_x, y)
             )
             start_x += 160
-        return func(self, *args, **kwargs)
+
+        return result
     return wrapper
 
 # ba_meta export babase.Plugin
