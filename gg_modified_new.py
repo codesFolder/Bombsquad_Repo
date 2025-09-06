@@ -46,6 +46,26 @@ class PartyWindowWithThreeButtons(bauiv1lib.party.PartyWindow):
     def __init__(s, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # --- CUSTOMIZATION VARIABLES ---
+        # Edit these values to change the layout and appearance of the buttons.
+
+        # 1. Size and Scale
+        button_size = (50, 35)   # (width, height) of each button.
+        button_scale = 0.7       # The overall size of the buttons.
+
+        # 2. Position and Layout
+        # This is the position of the RIGHTMOST button ('Sorry').
+        start_pos_x = s._width - 60
+        start_pos_y = s._height - 83
+
+        # This is the space BETWEEN each button.
+        # Positive value moves left, negative value moves right.
+        horizontal_offset = 60
+        # To make them vertical, set horizontal_offset = 0 and use this:
+        vertical_offset = 0
+        # --- END OF CUSTOMIZATION VARIABLES ---
+
+
         # Independent cooldowns
         s._delay_sorry = s._a_sorry = 50
         s._delay_gg = s._a_gg = 50
@@ -54,33 +74,35 @@ class PartyWindowWithThreeButtons(bauiv1lib.party.PartyWindow):
         # Sorry button (rightmost)
         s._btn_sorry = bui.buttonwidget(
             parent=s._root_widget,
-            size=(50, 35),
-            scale=0.7,
+            size=button_size,
+            scale=button_scale,
             label='Sorry',
             button_type='square',
-            position=(s._width - 60, s._height - 83),
+            position=(start_pos_x, start_pos_y),
             on_activate_call=s._send_sorry
         )
 
         # GG button (middle)
         s._btn_gg = bui.buttonwidget(
             parent=s._root_widget,
-            size=(50, 35),
-            scale=0.7,
+            size=button_size,
+            scale=button_scale,
             label='GG',
             button_type='square',
-            position=(s._width - 120, s._height - 83),
+            position=(start_pos_x - horizontal_offset,
+                      start_pos_y - vertical_offset),
             on_activate_call=s._send_gg
         )
 
         # Taunt button (leftmost)
         s._btn_taunt = bui.buttonwidget(
             parent=s._root_widget,
-            size=(50, 35),
-            scale=0.7,
+            size=button_size,
+            scale=button_scale,
             label='Taunt',
             button_type='square',
-            position=(s._width - 180, s._height - 83),
+            position=(start_pos_x - (2 * horizontal_offset),
+                      start_pos_y - (2 * vertical_offset)),
             on_activate_call=s._send_taunt
         )
 
