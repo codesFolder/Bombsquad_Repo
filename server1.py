@@ -15,22 +15,15 @@ def j(address, port=43210, print_progress=False):
         pass
     m.i = address
     m.p = port
-    # Send a quick chat message before reconnecting
-    try:
-        bs.chatmessage("🔄 Rejoining last server...")
-    except:
-        pass
     _original_connect(m.i, m.p, print_progress)
 
 def R(s):
     def w(t, *f, **g):
-        # Bigger, green button with tooltip
         z(
             parent=t._root_widget,
-            size=(35, 35),  # bigger size
-            color=(0, 1, 0),  # green
+            size=(23, 26),
             icon=x('replayIcon'),
-            tooltip="Reconnect to last server",
+            color=(0, 1, 0),  # ✅ only change: green button
             on_activate_call=bs.Call(j, m.i, m.p)
         )
         return s(t, *f, **g)
