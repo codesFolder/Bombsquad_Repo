@@ -5,6 +5,7 @@ from babase import Plugin as v
 from bauiv1 import buttonwidget as z, gettexture as x
 from bauiv1lib.ingamemenu import InGameMenuWindow as InGameMenu
 from bauiv1lib.mainmenu import MainMenuWindow as MainMenu
+import bauiv1 as bui
 
 # ====== FAVOURITES LIST (auto-updated) ======
 favourites = []
@@ -15,13 +16,15 @@ MAX_FAVS = 5  # how many favourites to keep
 InGameMenu.i = InGameMenu.p = 0
 _original_connect = bs.connect_to_party
 
-# Save a server to favourites
+# Save a server to favourites and refresh main menu
 def save_favourite(name, ip, port):
     global favourites
     new_entry = {"name": name, "ip": ip, "port": port}
     if new_entry not in favourites:
         favourites.append(new_entry)
-        favourites = favourites[-MAX_FAVS:]  # keep last MAX_FAVS entries
+        favourites = favourites[-MAX_FAVS:]
+        # Force refresh main menu so buttons appear immediately
+        bui.app.ui_v1.set_main_menu_window(MainMenu().get_root_widget())
 
 # Reconnect function
 def reconnect(address, port=43210, print_progress=False):
