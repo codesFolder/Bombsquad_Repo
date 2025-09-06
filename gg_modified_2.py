@@ -9,23 +9,80 @@ from bascenev1 import screenmessage as push
 # --- Message Lists ---
 # (Unchanged)
 sorry_msgs = [
-    "😅 Oops, my bad there!", "🙏 Sorry about that, didn’t mean to!",
-    "🙇 My apologies, that was clumsy of me!", "😬 Whoops! Totally my fault.",
-    "🙏 Sorry! I’ll make it up to you.", "😓 Didn’t mean to mess that up, sorry!",
-    "🙁 My mistake, won’t happen again!", "🙇‍♂️ Apologies! That was on me."
+    "😅 Oops, my bad there!",
+    "🙏 Sorry about that, didn’t mean to!",
+    "🙇 My apologies, that was clumsy of me!",
+    "😬 Whoops! Totally my fault.",
+    "🤦 Yikes… that one’s on me.",
+    "🙃 Well… that didn’t go as planned.",
+    "😔 Sorry team, I’ll make it up to you!",
+    "🥴 My bad, I was half asleep there.",
+    "💢 Ugh, I messed that up big time.",
 ]
+
 gg_msgs = [
-    "👏 Good game, everyone! That was fun. 🎉", "🏆 GG! Well played all around. 👏",
-    "🤝 Wooo — that was a solid match! 💪", "🎯 Nice game! You all played great. 🙌",
-    "🏅 GG! Let’s do that again sometime. 😄", "⚔️ Well fought, team! 💥",
-    "🔥 GG! That was intense. 💯", "🎮 Good game! Thanks for playing. 😊"
+    "👏 Good game, everyone! That was fun. 🎉",
+    "🏆 GG! Well played all around. 👏",
+    "🤝 Wooo — that was a solid match! 💪",
+    "🎯 Nice game! You all played great. 🙌",
+    "🔥 GGWP! That was intense.",
+    "💯 Respect — you guys brought your A-game.",
+    "🎮 That’s how you play! GG.",
+    "🥳 Fun match! Let’s do it again sometime.",
+    "⚡ GG! That ending was wild.",
 ]
+
 taunt_msgs = [
-    "😏 Is that your best shot...", "😂 I’ve seen toddlers throw harder than that!",
-    "🐌 That move was so slow...", "⚠️ Careful, you might hurt yourself!",
-    "🏆 If missing was a sport, you’d be champ.", "🙃 I almost felt that… almost.",
-    "💨 You call that an attack?", "🎯 I’ve fought tougher opponents in the tutorial."
+    "😏 Is that your best shot?",
+    "😂 I’ve seen toddlers throw harder than that!",
+    "🐌 That move was so slow, I had time to make a sandwich. 🥪",
+    "⚠️ Careful, you might hurt yourself swinging like that!",
+    "🪶 That attack tickled.",
+    "📦 Return to sender — weak delivery.",
+    "🥱 Wake me up when you actually land a hit.",
+    "🎯 You’re aiming… somewhere, I guess?",
+    "🧊 Cold moves… and not in a good way.",
 ]
+
+greet_msgs = [
+    "Hey everyone! 👋",
+    "Hello! Ready for a game? 😄",
+    "Hi there! GLHF!",
+    "Yo! Let's do this. 🔥",
+    "👑 The champ has arrived!",
+    "🎮 Who’s ready to lose? 😉",
+    "🚀 Let’s blast off into this match!",
+    "🍀 Good luck, you’ll need it.",
+    "⚡ Let’s make this quick and fun.",
+]
+
+bye_msgs = [
+    "GG, gotta go. Bye! 👋",
+    "That's all for me, see ya!",
+    "Fun games! Catch you all later.",
+    "I'm out, take care everyone!",
+    "💨 Vanishing like a ninja — bye!",
+    "🎯 That’s my last round, peace out.",
+    "🍻 Good games, I’m off!",
+    "🛑 Logging off before I get too good.",
+    "🌙 Night all, GG!",
+]
+
+react_msgs = [
+    "bruh",
+    "wtf",
+    "lol",
+    "damn!",
+    "oof",
+    "💀",
+    "🔥",
+    "😭",
+    "😱",
+    "EZ",
+    "sheeeesh",
+    "🤯",
+]
+
 
 
 class PartyWindowWithButtons(bauiv1lib.party.PartyWindow):
@@ -67,6 +124,33 @@ class PartyWindowWithButtons(bauiv1lib.party.PartyWindow):
                 'label': 'Taunt',
                 'messages': taunt_msgs,
                 'color': (1.0, 0.5, 0.3),  # Orange
+                'position': (start_pos_x - (2 * horizontal_offset),
+                             start_pos_y - (2 * vertical_offset)),
+                'last_use_time': 0.0,
+                'widget': None
+            },
+            'greet': {
+                'label': 'greet',
+                'messages': greet_msgs,
+                'color': (0.6, 0.4, 0.8),   # Lavender
+                'position': (start_pos_x - (2 * horizontal_offset),
+                             start_pos_y - (2 * vertical_offset)),
+                'last_use_time': 0.0,
+                'widget': None
+            },
+            'bye': {
+                'label': 'bye',
+                'messages': taunt_msgs,
+                'color': (1.0, 0.75, 0.8),  # Pink
+                'position': (start_pos_x - (2 * horizontal_offset),
+                             start_pos_y - (2 * vertical_offset)),
+                'last_use_time': 0.0,
+                'widget': None
+            },
+            'react': {
+                'label': 'react',
+                'messages': react_msgs,
+                'color': (0.1, 0.1, 0.4),   # Navy Blue
                 'position': (start_pos_x - (2 * horizontal_offset),
                              start_pos_y - (2 * vertical_offset)),
                 'last_use_time': 0.0,
