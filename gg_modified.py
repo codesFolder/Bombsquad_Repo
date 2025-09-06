@@ -63,10 +63,13 @@ class GGPartyWindow(bauiv1lib.party.PartyWindow):
         col = random.choice(colors)
 
         try:
+            # Send to chat if available
             bs.chatmessage(msg, color=col)
-            print(f"[GGPlugin] Sent chat message: '{msg}' with color {col}")
+            # Always show on screen
+            bs.screenmessage(msg, color=col)
+            print(f"[GGPlugin] Sent message: '{msg}' with color {col}")
         except Exception as e:
-            print(f"[GGPlugin] ERROR sending chat message: {e}")
+            print(f"[GGPlugin] ERROR sending message: {e}")
 
         try:
             bs.play_sound(bs.getsound('ding'))
@@ -80,7 +83,6 @@ class GGPartyWindow(bauiv1lib.party.PartyWindow):
 
 # ba_meta export babase.Plugin
 class GGPlugin(babase.Plugin):
-    def __init__(s):
-        print("[GGPlugin] Initializing plugin...")
+    def on_app_running(self):
+        print("[GGPlugin] App running — overriding PartyWindow")
         bauiv1lib.party.PartyWindow = GGPartyWindow
-        print("[GGPlugin] PartyWindow overridden with GGPartyWindow")
