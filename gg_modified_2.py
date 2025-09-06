@@ -5,211 +5,152 @@ import bauiv1lib.party
 import random
 import bascenev1 as bs
 from bascenev1 import screenmessage as push
-from bauiv1 import SpecialChar as sc
 
-# --- Message Lists ---
-# You can add or change any messages in these lists.
-
+# Sorry messages
 sorry_msgs = [
     "😅 Oops, my bad there!",
     "🙏 Sorry about that, didn’t mean to!",
     "🙇 My apologies, that was clumsy of me!",
     "😬 Whoops! Totally my fault.",
+    "🙏 Sorry! I’ll make it up to you.",
+    "😓 Didn’t mean to mess that up, sorry!",
+    "🙁 My mistake, won’t happen again!",
+    "🙇‍♂️ Apologies! That was on me."
 ]
 
+# GG messages
 gg_msgs = [
     "👏 Good game, everyone! That was fun. 🎉",
     "🏆 GG! Well played all around. 👏",
     "🤝 Wooo — that was a solid match! 💪",
     "🎯 Nice game! You all played great. 🙌",
+    "🏅 GG! Let’s do that again sometime. 😄",
+    "⚔️ Well fought, team! 💥",
+    "🔥 GG! That was intense. 💯",
+    "🎮 Good game! Thanks for playing. 😊"
 ]
 
+# Taunt messages
 taunt_msgs = [
-    "😏 Is that your best shot?",
+    "😏 Is that your best shot, or are you just warming up for me?",
     "😂 I’ve seen toddlers throw harder than that!",
     "🐌 That move was so slow, I had time to make a sandwich. 🥪",
     "⚠️ Careful, you might hurt yourself swinging like that!",
+    "🏆 If missing was a sport, you’d be the world champion. 😜",
+    "🙃 I almost felt that… almost.",
+    "💨 You call that an attack? I call it a gentle breeze.",
+    "🎯 I’ve fought tougher opponents in the tutorial."
 ]
 
-# New message lists (currently empty, you can fill them)
-greet_msgs = [
-    "Hey everyone! 👋",
-    "Hello! Ready for a game? 😄",
-    "Hi there! GLHF!",
-    "Yo! Let's do this. 🔥",
-]
-
-bye_msgs = [
-    "GG, gotta go. Bye! 👋",
-    "That's all for me, see ya!",
-    "Fun games! Catch you all later.",
-    "I'm out, take care everyone!",
-]
-
-react_msgs = [
-    "bruh",
-    "wtf",
-    "lol",
-    "damn!",
-    "oof",
-    "💀",
-]
-
-# --- The Main Plugin Class ---
-
-class PartyWindowWithButtons(bauiv1lib.party.PartyWindow):
-    """
-    A modified PartyWindow that adds a set of quick-chat buttons.
-    """
-
-    # --- CUSTOMIZATION VARIABLES ---
-    # Edit these values to change the layout and appearance of the buttons.
-
-    # 1. Button Cooldown
-    COOLDOWN_SECONDS = 5.0  # Cooldown time in seconds for all buttons.
-
-    # 2. Button Size and Scale
-    BUTTON_SIZE = (45, 45)    # Width and height of the buttons.
-    BUTTON_SCALE = 0.8       # How large the buttons appear.
-
-    # 3. Button Layout and Position
-    # The starting position for the FIRST button.
-    # (0, 0) is the bottom-left corner of the window.
-    START_POS = (10, 200)
-
-    # The offset between each button. Change this to rearrange the layout.
-    # Examples:
-    # (50, 0)   -> Horizontal layout, from left to right.
-    # (-50, 0)  -> Horizontal layout, from right to left.
-    # (0, 50)   -> Vertical layout, from bottom to top.
-    # (0, -50)  -> Vertical layout, from top to bottom.
-    BUTTON_OFFSET = (0, 50)
-
-    def __init__(self, *args, **kwargs):
+class PartyWindowWithThreeButtons(bauiv1lib.party.PartyWindow):
+    def __init__(s, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # This dictionary holds all the data and state for our buttons.
-        # It's the core of the refactored code. Adding a new button is as
-        # easy as adding a new entry here.
-        self._buttons = {
-            'greet': {
-                'icon': sc.HAND,
-                'color': (0.2, 0.6, 1.0),  # Blue
-                'messages': greet_msgs,
-                'last_use_time': 0.0,
-                'widget': None
-            },
-            'sorry': {
-                'icon': sc.FACE_SAD,
-                'color': (1.0, 0.8, 0.3),  # Yellow
-                'messages': sorry_msgs,
-                'last_use_time': 0.0,
-                'widget': None
-            },
-            'gg': {
-                'icon': sc.TROPHY,
-                'color': (0.4, 1.0, 0.4),  # Green
-                'messages': gg_msgs,
-                'last_use_time': 0.0,
-                'widget': None
-            },
-            'taunt': {
-                'icon': sc.FACE_FLAT,
-                'color': (1.0, 0.5, 0.3),  # Orange
-                'messages': taunt_msgs,
-                'last_use_time': 0.0,
-                'widget': None
-            },
-            'react': {
-                'icon': sc.SHIELD,
-                'color': (0.8, 0.5, 1.0),  # Purple
-                'messages': react_msgs,
-                'last_use_time': 0.0,
-                'widget': None
-            },
-            'bye': {
-                'icon': sc.DOOR,
-                'color': (0.7, 0.7, 0.7),  # Gray
-                'messages': bye_msgs,
-                'last_use_time': 0.0,
-                'widget': None
-            },
-        }
+        # --- CUSTOMIZATION VARIABLES ---
+        # Edit these values to change the layout and appearance of the buttons.
 
-        # This loop creates all the buttons automatically based on our dictionary.
-        for i, (name, data) in enumerate(self._buttons.items()):
-            # Calculate the position for this button
-            pos_x = self.START_POS[0] + i * self.BUTTON_OFFSET[0]
-            pos_y = self.START_POS[1] + i * self.BUTTON_OFFSET[1]
+        # 1. Size and Scale
+        button_size = (50, 35)   # (width, height) of each button.
+        button_scale = 0.7       # The overall size of the buttons.
 
-            # Create the button widget
-            data['widget'] = bui.buttonwidget(
-                parent=self._root_widget,
-                size=self.BUTTON_SIZE,
-                scale=self.BUTTON_SCALE,
-                label=bui.charstr(data['icon']),
-                color=data['color'],
-                button_type='square',
-                position=(pos_x, pos_y),
-                # This lambda function is important. It tells the button
-                # to call our handler function with its unique name.
-                on_activate_call=babase.Call(self._send_message, name)
-            )
+        # 2. Position and Layout
+        # This is the position of the RIGHTMOST button ('Sorry').
+        start_pos_x = s._width - 60
+        start_pos_y = s._height - 83
 
-    def _send_message(self, name: str):
-        """A single function to handle clicks for ALL buttons."""
-        btn_data = self._buttons.get(name)
-        if not btn_data:
+        # This is the space BETWEEN each button.
+        # Positive value moves left, negative value moves right.
+        horizontal_offset = 60
+        # To make them vertical, set horizontal_offset = 0 and use this:
+        vertical_offset = 0
+        # --- END OF CUSTOMIZATION VARIABLES ---
+
+
+        # Independent cooldowns
+        s._delay_sorry = s._a_sorry = 50
+        s._delay_gg = s._a_gg = 50
+        s._delay_taunt = s._a_taunt = 50
+
+        # Sorry button (rightmost)
+        s._btn_sorry = bui.buttonwidget(
+            parent=s._root_widget,
+            size=button_size,
+            scale=button_scale,
+            label='Sorry',
+            button_type='square',
+            position=(start_pos_x, start_pos_y),
+            on_activate_call=s._send_sorry
+        )
+
+        # GG button (middle)
+        s._btn_gg = bui.buttonwidget(
+            parent=s._root_widget,
+            size=button_size,
+            scale=button_scale,
+            label='GG',
+            button_type='square',
+            position=(start_pos_x - horizontal_offset,
+                      start_pos_y - vertical_offset),
+            on_activate_call=s._send_gg
+        )
+
+        # Taunt button (leftmost)
+        s._btn_taunt = bui.buttonwidget(
+            parent=s._root_widget,
+            size=button_size,
+            scale=button_scale,
+            label='Taunt',
+            button_type='square',
+            position=(start_pos_x - (2 * horizontal_offset),
+                      start_pos_y - (2 * vertical_offset)),
+            on_activate_call=s._send_taunt
+        )
+
+    # Update labels for cooldown
+    def _ok_sorry(s, a):
+        if s._btn_sorry.exists():
+            bui.buttonwidget(edit=s._btn_sorry,
+                             label=str((s._delay_sorry - a) / 10) if a != s._delay_sorry else 'Sorry')
+            s._a_sorry = a
+
+    def _ok_gg(s, a):
+        if s._btn_gg.exists():
+            bui.buttonwidget(edit=s._btn_gg,
+                             label=str((s._delay_gg - a) / 10) if a != s._delay_gg else 'GG')
+            s._a_gg = a
+
+    def _ok_taunt(s, a):
+        if s._btn_taunt.exists():
+            bui.buttonwidget(edit=s._btn_taunt,
+                             label=str((s._delay_taunt - a) / 10) if a != s._delay_taunt else 'Taunt')
+            s._a_taunt = a
+
+    # Button actions
+    def _send_sorry(s):
+        if s._a_sorry != s._delay_sorry:
+            push("Too fast!")
             return
+        bs.chatmessage(random.choice(sorry_msgs))
+        for i in range(10, s._delay_sorry + 1):
+            bs.apptimer((i - 10) / 10, bs.Call(s._ok_sorry, i))
 
-        # Check for cooldown
-        now = babase.apptime()
-        time_since_last_use = now - btn_data['last_use_time']
-
-        if time_since_last_use < self.COOLDOWN_SECONDS:
-            time_left = self.COOLDOWN_SECONDS - time_since_last_use
-            push(f"Wait {time_left:.1f} more seconds!", color=(1, 0.5, 0))
-            bui.getsound('error').play()
+    def _send_gg(s):
+        if s._a_gg != s._delay_gg:
+            push("Too fast!")
             return
+        bs.chatmessage(random.choice(gg_msgs))
+        for i in range(10, s._delay_gg + 1):
+            bs.apptimer((i - 10) / 10, bs.Call(s._ok_gg, i))
 
-        # If cooldown is over, send the message
-        if not btn_data['messages']:
-            push("No messages defined for this button!", color=(1, 0, 0))
-            bui.getsound('error').play()
+    def _send_taunt(s):
+        if s._a_taunt != s._delay_taunt:
+            push("Too fast!")
             return
-            
-        bs.chatmessage(random.choice(btn_data['messages']))
-        bui.getsound('swish').play()
-
-        # Update last use time and start the visual cooldown
-        btn_data['last_use_time'] = now
-        self._update_cooldown_visual(name)
-
-    def _update_cooldown_visual(self, name: str):
-        """Updates the button's label to show the cooldown timer."""
-        btn_data = self._buttons.get(name)
-        if not btn_data or not btn_data['widget'].exists():
-            return
-
-        now = babase.apptime()
-        time_elapsed = now - btn_data['last_use_time']
-        time_left = self.COOLDOWN_SECONDS - time_elapsed
-
-        if time_left > 0:
-            # If still in cooldown, show the remaining time
-            bui.buttonwidget(edit=btn_data['widget'],
-                             label=f'{time_left:.1f}')
-            # Schedule this function to run again shortly
-            babase.apptimer(0.1, babase.Call(self._update_cooldown_visual, name))
-        else:
-            # If cooldown is over, restore the original icon
-            bui.buttonwidget(edit=btn_data['widget'],
-                             label=bui.charstr(btn_data['icon']))
-
+        bs.chatmessage(random.choice(taunt_msgs))
+        for i in range(10, s._delay_taunt + 1):
+            bs.apptimer((i - 10) / 10, bs.Call(s._ok_taunt, i))
 
 # ba_meta export babase.Plugin
 class byBordd(babase.Plugin):
-    def __init__(self):
-        # This is the "monkey-patch" that replaces the original PartyWindow
-        # with our new, modified version.
-        bauiv1lib.party.PartyWindow = PartyWindowWithButtons
+    def __init__(s):
+        bauiv1lib.party.PartyWindow = PartyWindowWithThreeButtons
