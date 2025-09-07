@@ -32,18 +32,6 @@ gg_msgs = [
     "⚡ GG! That ending was wild.",
 ]
 
-taunt_msgs = [
-    "😏 Is that your best shot?",
-    "😂 I’ve seen toddlers throw harder than that!",
-    "🐌 That move was so slow, I had time to make a sandwich. 🥪",
-    "⚠️ Careful, you might hurt yourself swinging like that!",
-    "🪶 That attack tickled.",
-    "📦 Return to sender — weak delivery.",
-    "🥱 Wake me up when you actually land a hit.",
-    "🎯 You’re aiming… somewhere, I guess?",
-    "🧊 Cold moves… and not in a good way.",
-]
-
 greet_msgs = [
     "Hey everyone! 👋",
     "Hello! Ready for a game? 😄",
@@ -68,6 +56,27 @@ bye_msgs = [
     "🌙 Night all, GG!",
 ]
 
+taunt_msgs = [
+    "😏 Is that your best shot?",
+    "😂 I’ve seen toddlers throw harder than that!",
+    "🐌 That move was so slow, I had time to make a sandwich. 🥪",
+    "⚠️ Careful, you might hurt yourself swinging like that!",
+    "🪶 That attack tickled.",
+    "📦 Return to sender — weak delivery.",
+    "🥱 Wake me up when you actually land a hit.",
+    "🎯 You’re aiming… somewhere, I guess?",
+    "🧊 Cold moves… and not in a good way.",
+    "🫠 That was… embarrassing.",
+    "🎪 Welcome to the clown show — starring you.",
+    "🪞 You might wanna fight your reflection first.",
+    "📉 Your skill level just dropped another tier.",
+    "🕰 I’ve seen faster moves in slow motion.",
+    "🧃 Juice box break? You’re gonna need it.",
+    "💤 Wake me when you’re done missing.",
+    "🪦 RIP your chances.",
+    "🎲 Bad roll, unlucky… or just bad?",
+]
+
 react_msgs = [
     "bruh",
     "wtf",
@@ -81,7 +90,19 @@ react_msgs = [
     "EZ",
     "sheeeesh",
     "🤯",
+    "no way",
+    "yikes",
+    "GG EZ",
+    "clutch!",
+    "rip",
+    "broooo",
+    "👀",
+    "😮",
+    "💪",
+    "🫡",
+    "😈",
 ]
+
 
 
 class PartyWindowWithButtons(bauiv1lib.party.PartyWindow):
