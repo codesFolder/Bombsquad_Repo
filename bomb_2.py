@@ -1,76 +1,106 @@
 # ba_meta require api 9
-# ba_meta export babase.Plugin
-
-"""
-    Bomb Radius Visualizer (Client-Side) by TheMikirog, modified for all servers.
-
-    This version works even when you join other people's servers,
-    because it only adds visual effects locally without touching server logic.
-"""
-
 from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import babase
 import bascenev1 as bs
 
+if TYPE_CHECKING:
+    from typing import Any
 
-class BombRadiusVisualizer(babase.Plugin):
+# --- CONFIGURATION ---
+# You can change these values to customize the plugin.
+
+# The time in seconds that the bomb timer starts from.
+BOMB_START_TIME = 9.0
+
+# The position of the timer text relative to the bomb's center.
+# Format is (X, Y, Z). Y is the vertical axis.
+TIMER_POSITION_OFFSET = (0, 1.2, 0)
+
+# --- END OF CONFIGURATION ---
+
+
+# We need to save the original Bomb methods before we replace them.
+_old_bomb_init = bs.Bomb.__init__
+_old_bomb_del = bs.Bomb.__del__
+
+
+def _new_bomb_init(self,
+                   position: tuple[float, float, float] = (0.0, 1.0, 0.0),
+                   velocity: tuple[float, float, float] = (0.0, 0.0, 0.0),
+                   bomb_type: str = 'normal',
+                   blast_radius: float = 2.0,
+                   source_player: bs.Player | None = None,
+                   owner: bs.Node | None = None):
+    """
+    This function will run every time a new bomb is created.
+    """
+    # First, call the original __init__ to make sure the bomb is
+    # created correctly by the game engine.
+    _old_bomb_init(self, position, velocity, bomb_type, blast_radius,
+                   source_player, owner)
+
+    # Now, add our custom timer logic.
+    self._bomb_timer_countdown = BOMB_START_TIME
+
+    # Create the floating text node.
+    self._bomb_timer_text_node = babase.newnode(
+        'text',
+        owner=self.node,  # Attach it to the bomb's node.
+        attrs={
+            'text': f'{self._bomb_timer_countdown:.1f}',
+            'in_world': True,  # Make it a 3D object in the game world.
+            'shadow': 0.5,
+            'flatness': 1.0,
+            'scale': 0.012,
+            'h_align': 'center',
+            'color': (1, 1, 0.4) # A light yellow color
+        })
+    
+    # Start the timer loop that will update the text.
+    self._bomb_timer = babase.AppTimer(
+        0.1, babase.Call(self._update_bomb_timer), repeat=True
+    )
+
+
+def _update_bomb_timer(self) -> None:
+    """
+    This function runs every 0.1 seconds for each bomb.
+    """
+    self._bomb_timer_countdown -= 0.1
+
+    # Safety check: Make sure the text node still exists before trying to edit it.
+    if self._bomb_timer_text_node:
+        if self._bomb_timer_countdown > 0:
+            # Update the text with the new time, formatted to one decimal place.
+            self._bomb_timer_text_node.text = f'{self._bomb_timer_countdown:.1f}'
+        else:
+            # Once time is up, show 0.0 and stop updating.
+            self._bomb_timer_text_node.text = '0.0'
+            self._bomb_timer = None # Stop the timer loop.
+
+def _new_bomb_del(self) -> None:
+    """
+    This runs when a bomb is destroyed (explodes, falls, etc.).
+    """
+    # Clean up our custom timer and text node to prevent memory leaks.
+    self._bomb_timer = None
+    if self._bomb_timer_text_node:
+        self._bomb_timer_text_node.delete()
+
+    # Call the original __del__ to let the game finish deleting the bomb.
+    _old_bomb_del(self)
+
+
+# ba_meta export babase.Plugin
+class BombTimerPlugin(babase.Plugin):
+    """
+    A plugin to display a countdown timer above bombs.
+    """
     def __init__(self):
-        # Run a repeating timer to check for bombs in the scene.
-        bs.timer(0.1, self._scan_for_bombs, repeat=True)
-        self._processed_ids: set[int] = set()
-
-    def _scan_for_bombs(self):
-        # Loop through all nodes in the scene.
-        for node in bs.getnodes():
-            if node.type == 'bomb':
-                # Use the node's unique id to avoid reprocessing.
-                if id(node) not in self._processed_ids:
-                    self._processed_ids.add(id(node))
-                    self._add_visuals(node)
-
-    def _add_visuals(self, bomb_node):
-        # Try to get blast radius; default to 2.0 if not available.
-        blast_radius = getattr(bomb_node, 'blast_radius', 2.0)
-
-        # --- Red filled circle ---
-        radius_visualizer = bs.newnode(
-            'locator',
-            owner=bomb_node,
-            attrs={
-                'shape': 'circle',
-                'color': (1, 0, 0),
-                'opacity': 0.05,
-                'draw_beauty': False,
-                'additive': False
-            }
-        )
-        bomb_node.connectattr('position', radius_visualizer, 'position')
-
-        bs.animate_array(
-            radius_visualizer, 'size', 1, {
-                0.0: [0.0],
-                0.2: [blast_radius * 2.2],
-                0.25: [blast_radius * 2.0]
-            }
-        )
-
-        # --- Yellow outline circle ---
-        radius_outline = bs.newnode(
-            'locator',
-            owner=bomb_node,
-            attrs={
-                'shape': 'circleOutline',
-                'size': [blast_radius * 2.0],
-                'color': (1, 1, 0),
-                'draw_beauty': False,
-                'additive': True
-            }
-        )
-        bomb_node.connectattr('position', radius_outline, 'position')
-
-        bs.animate(
-            radius_outline, 'opacity', {
-                0.0: 0.0,
-                0.4: 0.1
-            }
-        )
+        # This is where we apply the "monkey-patch".
+        # We replace the game's default functions with our new ones.
+        bs.Bomb.__init__ = _new_bomb_init
+        bs.Bomb.__del__ = _new_bomb_del
+        bs.Bomb._update_bomb_timer = _update_bomb_timer
