@@ -57,6 +57,23 @@ bye_msgs = [
 ]
 
 taunt_msgs = [
+    # New villain-style lines
+    "🦹 Pathetic… I expected a challenge.",
+    "🩸 I’ll make this quick… for my amusement.",
+    "🔥 You’re just fuel for my victory.",
+    "🕷 Caught in my web, little fly.",
+    "💀 I’ve ended stronger foes before breakfast.",
+    "🗡 Every move you make only seals your fate.",
+    "🪓 I’ll carve my name into your defeat.",
+    "🌑 Darkness always wins… and I am darkness.",
+    "🦴 I’ll break you, piece by piece.",
+    "👁 I see fear in your eyes… delicious.",
+    "🩹 You’ll need more than bandages after this.",
+    "🪙 Consider this your toll for crossing me.",
+    "🦇 You’re just another shadow in my night.",
+    "⚰ Step into your grave — I’ve prepared it.",
+    "🩸 Your struggle only entertains me.",
+    
     "😏 Is that your best shot?",
     "😂 I’ve seen toddlers throw harder than that!",
     "🐌 That move was so slow, I had time to make a sandwich. 🥪",
@@ -67,7 +84,7 @@ taunt_msgs = [
     "🎯 You’re aiming… somewhere, I guess?",
     "🧊 Cold moves… and not in a good way.",
     "🫠 That was… embarrassing.",
-    "🎪 Welcome to the clown show — starring you.",
+    # "🎪 Welcome to the clown show — starring you.",
     "🪞 You might wanna fight your reflection first.",
     "📉 Your skill level just dropped another tier.",
     "🕰 I’ve seen faster moves in slow motion.",
@@ -75,7 +92,9 @@ taunt_msgs = [
     "💤 Wake me when you’re done missing.",
     "🪦 RIP your chances.",
     "🎲 Bad roll, unlucky… or just bad?",
+    
 ]
+
 
 react_msgs = [
     "bruh",
@@ -92,7 +111,7 @@ react_msgs = [
     "🤯",
     "no way",
     "yikes",
-    "GG EZ",
+    "eeee",
     "clutch!",
     "rip",
     "broooo",
