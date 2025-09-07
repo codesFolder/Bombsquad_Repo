@@ -91,10 +91,10 @@ class PartyWindowWithButtons(bauiv1lib.party.PartyWindow):
         # --- CUSTOMIZATION VARIABLES ---
         button_size = (50, 35)
         button_scale = 0.7
-        start_pos_x = s._width - 60
+        start_pos_x = s._width - 30
         start_pos_y = s._height - 83
-        horizontal_offset = 60
-        vertical_offset = 0
+        horizontal_offset = 0
+        vertical_offset = 40
         s._cooldown_seconds = 5.0
         # --- END OF CUSTOMIZATION ---
 
