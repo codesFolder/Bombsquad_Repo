@@ -19,7 +19,15 @@ if TYPE_CHECKING:
     from typing import Any, Optional
 
 
-# A simple class to store our settings
+# The main plugin class MUST be defined immediately after the meta tags.
+class PowerupPlugin(ba.Plugin):
+    """The plugin entry point."""
+
+    def __init__(self) -> None:
+        patch_in_game_menu()
+
+# All helper classes and functions can be defined below the main plugin class.
+
 class PluginSettings:
     """Stores the state of the 'permanent' checkbox."""
     is_permanent: bool = False
@@ -33,7 +41,6 @@ def get_player_spaz() -> Optional[ba.Actor]:
     activity = ba.get_foreground_host_activity()
     if activity:
         for player in activity.players:
-            # Check if the player is alive and is controlled by the local device
             if player.is_alive() and player.sessionplayer.inputdevice.is_attached_to_player():
                 return player.actor
     return None
@@ -47,7 +54,6 @@ def apply_powerup(powerup_type: str) -> None:
         bui.getsound('error').play()
         return
 
-    # Use direct equipment for permanent effect, or PowerupMessage for temporary
     if PluginSettings.is_permanent:
         if powerup_type == 'punch':
             spaz.equip_boxing_gloves()
@@ -227,7 +233,8 @@ def patch_in_game_menu() -> None:
 
     def _new_refresh(self: InGameMenuWindow) -> None:
         _old_refresh(self)
-        if self._root_widget and self._leave_button.exists():
+        # We need to make sure the root widget exists and is not a recycled one
+        if self._root_widget and self._root_widget.exists() and self._leave_button.exists():
             pos = self._leave_button.get_position()
             bui.buttonwidget(edit=self._leave_button,
                              position=(pos[0], pos[1] + 50))
@@ -244,11 +251,4 @@ def patch_in_game_menu() -> None:
                 color=(0.1, 0.5, 0.8))
 
     InGameMenuWindow._refresh = _new_refresh
-
-
-class PowerupPlugin(ba.Plugin):
-    """The plugin entry point."""
-
-    def __init__(self) -> None:
-        patch_in_game_menu()
 
