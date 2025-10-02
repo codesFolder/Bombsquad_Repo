@@ -3,9 +3,10 @@ import babase
 import _babase
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1 import broadcastmessage as push
+from bascenev1 import broadcastmessage as push, get_foreground_host_activity as ga
 from bauiv1lib.ingamemenu import InGameMenuWindow as igm
 from bascenev1lib.actor.playerspaz import PlayerSpaz
+from typing import Any, cast
 
 
 class NicePowerup:
@@ -17,35 +18,40 @@ class NicePowerup:
     wht = (1, 1, 1)
 
     def __init__(self):
-        # Apply the patch to the InGameMenu
-        self.patch_igm()
+        # This is used to add the button to the in-game menu, following sandbox pattern
+        pass
 
-    def patch_igm(self):
-        """Patch the InGameMenu to add our powerup button like sandbox does"""
-        original_method = igm._refresh_in_game
+    def Button(self):
+        """Create a button wrapper similar to sandbox.py's Button function"""
+        def lmao(self):
+            PowerupPanel()
+            self._resume()
 
-        def patched_method(self, *args, **kwargs):
-            # Call the original method first
-            result = original_method(self, *args, **kwargs)
+        def openBox(self):
+            bui.buttonwidget(edit=self.sbox, icon=bui.gettexture('powerupPunchIcon'))
+            bs.apptimer(0.6, bs.Call(closeBox, self))
 
-            # Add our powerup button like sandbox does for its buttons
-            self.powerup_button = bui.buttonwidget(
-                parent=self._root_widget,
-                position=(100, self._height - 180),
-                size=(100, 40),
-                label='Powerups',
+        def closeBox(self):
+            if self.sbox.exists():
+                bui.buttonwidget(edit=self.sbox, icon=bui.gettexture('powerupPunchIcon'))
+
+        def wrap(self=igm._refresh_in_game, *args, **kwargs):
+            r = self(*args, **kwargs)
+            # Add the powerup button to the in-game menu
+            self.sbox = bui.buttonwidget(
                 color=self.colb,
+                parent=self._root_widget,
+                position=(30, self._height - 110),  # Position similar to sandbox
+                size=(100, 50),
+                scale=1.0,
                 textcolor=self.wht,
-                on_activate_call=self.open_powerup_panel,
-                button_type='square'
-            )
-            
-            return result
-
-        igm._refresh_in_game = patched_method
-
-    def open_powerup_panel(self):
-        PowerupPanel()
+                label="Powerups",
+                icon=bui.gettexture('powerupPunchIcon'),  # Use powerup icon
+                iconscale=0.8,
+                on_select_call=bs.Call(openBox, self),
+                on_activate_call=bs.Call(lmao, self))
+            return r
+        return wrap
 
 
 class PowerupPanel:
@@ -56,6 +62,18 @@ class PowerupPanel:
         self.cola = NicePowerup.cola
         self.colb = NicePowerup.colb
         self.wht = NicePowerup.wht
+        # Use same positioning and scaling as sandbox
+        self.soff = (0, 0)
+        self.howoff = 400
+        self._pos = 0
+        self._anim_out = 'out_right'
+        self._anim_outv = 'out_left'
+        self.anim_in = 'in_right'
+        self.anim_inv = 'in_left'
+        self.scale = 1.3
+        self._height = 300
+        self._width = 300
+        self.center_pos = (0, 140)
         self._create_ui()
         
     def _create_ui(self):
@@ -64,20 +82,20 @@ class PowerupPanel:
         overlay_stack = bui.get_special_widget('overlay_stack')
         
         # Create the main container like in sandbox
-        self._container = bui.containerwidget(
+        root_widget = self._rw = bui.containerwidget(
             parent=overlay_stack,
-            size=(300, 250),
-            position=(100, 300),
-            scale=1.0,
+            size=(self._width, self._height),
             color=self.cola,  # Same as sandbox's cola color
-            transition='in_right'
+            transition=self.anim_in,
+            stack_offset=self.soff,
+            scale=self.scale
         )
         
         # Title like in sandbox
         bui.textwidget(
-            parent=self._container,
+            parent=root_widget,
             text='Powerup Panel',
-            position=(150, 210),
+            position=(120, 250),
             color=(0.1, 0.7, 1),  # Same as sandbox
             scale=1.0,
             h_align='center',
@@ -86,45 +104,72 @@ class PowerupPanel:
         
         # Boxing Gloves Button
         bui.buttonwidget(
-            parent=self._container,
-            position=(30, 150),
-            size=(240, 40),
+            parent=root_widget,
+            position=(40, 185),
+            size=(220, 50),
             label='Get Permanent Gloves',
-            button_type='square',
             color=self.colb,
             textcolor=self.wht,
+            button_type='square',
             on_activate_call=self._give_boxing_gloves
         )
         
         # Triple Bombs Button
         bui.buttonwidget(
-            parent=self._container,
-            position=(30, 100),
-            size=(240, 40),
+            parent=root_widget,
+            position=(40, 125),
+            size=(220, 50),
             label='Get Triple Bombs',
-            button_type='square',
             color=self.colb,
             textcolor=self.wht,
+            button_type='square',
             on_activate_call=self._give_triple_bombs
         )
         
         # All Powerups Button
         bui.buttonwidget(
-            parent=self._container,
-            position=(30, 50),
-            size=(240, 40),
+            parent=root_widget,
+            position=(40, 65),
+            size=(220, 50),
             label='Get All Powerups',
-            button_type='square',
             color=self.colb,
             textcolor=self.wht,
+            button_type='square',
             on_activate_call=self._give_all_powerups
         )
+
+        # Back button
+        bacc = bui.buttonwidget(
+            parent=root_widget,
+            size=(60, 20),
+            label='Back',
+            scale=self.scale,
+            button_type='square',
+            position=(40, 30),
+            color=self.colb,
+            textcolor=self.wht,
+            on_activate_call=bs.Call(self.back))
+        bui.containerwidget(edit=root_widget, cancel_button=bacc)
+
+    def back(self, wosh=False):
+        """Close the panel like in sandbox"""
+        self.kill(wosh, self._rw)
+
+    def kill(self, wosh=False, who=None, keep_hl=False, anim=True, rev=False):
+        """Animate closing of the panel like in sandbox"""
+        try:
+            bui.containerwidget(edit=who, transition=(
+                self._anim_out if not rev else self._anim_outv) if anim else None)
+        except:
+            pass
+        if wosh:
+            bui.getsound('swish').play()
     
     def _get_local_player_spaz(self):
         """Get the local player's spaz"""
         try:
             # Get the current activity
-            activity = bs.get_foreground_host_activity()
+            activity = ga()
             for player in activity.players:
                 if player.sessionplayer.inputdevice.client_id == -1:  # Local player
                     actor = player.actor
@@ -185,5 +230,5 @@ class PowerupPanel:
 # ba_meta export babase.Plugin
 class PowerupPlugin(babase.Plugin):
     def on_app_running(self):
-        # Initialize the plugin
-        NicePowerup()
+        # Apply the same pattern as sandbox to add button to in-game menu
+        igm._refresh_in_game = NicePowerup().Button()(igm._refresh_in_game)
