@@ -1,5 +1,5 @@
 # ba_meta require api 9
-# (see https://ballistica.net/wiki/meta-tag-system)
+# ba_meta export babase.Plugin
 
 """
 Quick Powerups Plugin
@@ -55,7 +55,6 @@ def apply_powerup(powerup_type: str) -> None:
             spaz.set_bomb_count(3)
         elif powerup_type == 'shield':
             spaz.equip_shields()
-        # For other powerups, the temporary message is the only way
         else:
             spaz.handlemessage(ba.PowerupMessage(poweruptype=powerup_type))
     else:
@@ -75,9 +74,8 @@ class PowerupSelectWindow(bui.Window):
         self._scroll_width = self._width - 100
         self._scroll_height = self._height - 120
         self._sub_width = self._scroll_width
-        self._sub_height = 800  # A large height to fit all buttons
+        self._sub_height = 800
 
-        # Define the powerups we want to show
         self.powerups = [
             'triple_bombs', 'health', 'ice_bombs',
             'impact_bombs', 'punch', 'shield', 'sticky_bombs'
@@ -90,7 +88,6 @@ class PowerupSelectWindow(bui.Window):
             stack_offset=(0, -10)
         ))
 
-        # Close button
         self._cancel_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(40, self._height - 60),
@@ -114,21 +111,18 @@ class PowerupSelectWindow(bui.Window):
                        v_align='center',
                        maxwidth=200)
 
-        # Scrollable area for the powerup list
         self._scrollwidget = bui.scrollwidget(
             parent=self._root_widget,
             position=(50, 50),
             size=(self._scroll_width, self._scroll_height),
             autoselect=True)
-        bui.containerwidget(edit=self._scrollwidget, claims_left_right=True)
         self._subcontainer = bui.containerwidget(
             parent=self._scrollwidget,
             size=(self._sub_width, self._sub_height),
             background=False)
 
-        # Create a button for each powerup
         v_offset = self._sub_height
-        for i, powerup in enumerate(self.powerups):
+        for powerup in self.powerups:
             v_offset -= 60
             bui.buttonwidget(
                 parent=self._subcontainer,
@@ -142,7 +136,6 @@ class PowerupSelectWindow(bui.Window):
             )
 
     def select_powerup(self, powerup_type: str) -> None:
-        """Called when a powerup button is pressed."""
         apply_powerup(powerup_type)
         self._on_cancel_press()
 
@@ -163,10 +156,8 @@ class QuickPowerupsWindow(bui.Window):
             stack_offset=(0, -10)
         ))
 
-        # We want to close the main in-game menu when we open this
         bui.containerwidget(edit=origin_widget, transition='out_left')
 
-        # Window Title
         bui.textwidget(parent=self._root_widget,
                        position=(self._width * 0.5, self._height - 40),
                        size=(0, 0),
@@ -176,7 +167,6 @@ class QuickPowerupsWindow(bui.Window):
                        v_align='center',
                        maxwidth=250)
 
-        # Main quick button
         bui.buttonwidget(
             parent=self._root_widget,
             position=(50, self._height - 120),
@@ -185,7 +175,6 @@ class QuickPowerupsWindow(bui.Window):
             on_activate_call=self.apply_combo,
             autoselect=True)
 
-        # Button for more options
         bui.buttonwidget(
             parent=self._root_widget,
             position=(50, self._height - 180),
@@ -193,7 +182,6 @@ class QuickPowerupsWindow(bui.Window):
             label="Choose Other Powerups...",
             on_activate_call=self.open_powerup_select)
 
-        # Checkbox for 'permanent' mode
         bui.checkboxwidget(
             parent=self._root_widget,
             text='Permanent (Lasts until death)',
@@ -203,7 +191,6 @@ class QuickPowerupsWindow(bui.Window):
             on_value_change_call=self.on_permanent_change,
             autoselect=True)
 
-        # Close button
         self._back_button = bui.buttonwidget(
             parent=self._root_widget,
             position=(self._width - 70, self._height - 60),
@@ -219,65 +206,49 @@ class QuickPowerupsWindow(bui.Window):
                             cancel_button=self._back_button)
 
     def on_permanent_change(self, value: bool) -> None:
-        """Update the setting when the checkbox is clicked."""
         PluginSettings.is_permanent = value
 
     def apply_combo(self) -> None:
-        """Applies the main combo and closes the window."""
         apply_powerup('punch')
         apply_powerup('triple_bombs')
         self.close()
 
     def open_powerup_select(self) -> None:
-        """Opens the list of all powerups."""
         self.close()
         PowerupSelectWindow()
 
     def close(self) -> None:
-        """Closes the window."""
         bui.containerwidget(edit=self._root_widget, transition='out_right')
 
 
-# This is the tricky part: we 'patch' the game's existing menu window
-# to add our own button.
+def patch_in_game_menu() -> None:
+    """This is where the magic happens."""
+    _old_refresh = InGameMenuWindow._refresh
 
-# Store the original function.
-_old_in_game_menu_init = InGameMenuWindow.__init__
+    def _new_refresh(self: InGameMenuWindow) -> None:
+        _old_refresh(self)
+        if self._root_widget and self._leave_button.exists():
+            pos = self._leave_button.get_position()
+            bui.buttonwidget(edit=self._leave_button,
+                             position=(pos[0], pos[1] + 50))
+            bui.buttonwidget(
+                parent=self._root_widget,
+                position=pos,
+                size=(160, 50),
+                label='Quick Powerups',
+                on_activate_call=ba.Call(QuickPowerupsWindow,
+                                         self._root_widget),
+                autoselect=True,
+                scale=1.1,
+                text_scale=1.2,
+                color=(0.1, 0.5, 0.8))
 
-
-def _new_in_game_menu_init(self: InGameMenuWindow, **kwargs: Any) -> None:
-    """Our modified version of the function."""
-    # First, call the original function to build the menu as usual.
-    _old_in_game_menu_init(self, **kwargs)
-
-    # Add a print statement to the console to confirm the plugin is running
-    ba.print("Quick Powerups Plugin: Attempting to add button to menu.")
-
-    # Now, add our custom button.
-    # We'll shift the existing 'Leave' button up to make space.
-    if self._leave_button.exists():
-        ba.print(
-            "Quick Powerups Plugin: Found 'Leave' button, adding powerup button.")
-        pos = self._leave_button.get_position()
-        bui.buttonwidget(edit=self._leave_button,
-                         position=(pos[0], pos[1] + 50))
-
-        # Add our button where the 'Leave' button used to be.
-        bui.buttonwidget(
-            parent=self._root_widget,
-            position=pos,
-            size=(160, 50),
-            label='Quick Powerups',
-            on_activate_call=ba.Call(QuickPowerupsWindow, self._root_widget),
-            autoselect=True,
-            scale=1.1,
-            text_scale=1.2,
-            color=(0.1, 0.5, 0.8))
-    else:
-        ba.print(
-            "Quick Powerups Plugin: Could not find 'Leave' button. Button not added.")
+    InGameMenuWindow._refresh = _new_refresh
 
 
-# Overwrite the game's original function with our new one.
-InGameMenuWindow.__init__ = _new_in_game_menu_init
+class PowerupPlugin(ba.Plugin):
+    """The plugin entry point."""
+
+    def __init__(self) -> None:
+        patch_in_game_menu()
 
