@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import babase as ba
 import bauiv1 as bui
-from bauiv1lib.ingamenu import InGameMenuWindow
+from bauiv1lib.ingamemenu import InGameMenuWindow
 
 if TYPE_CHECKING:
     from typing import Any, Optional
@@ -15,12 +15,12 @@ if TYPE_CHECKING:
 # Change the numbers below to move the 'Get Gloves' button.
 # 'x' moves it left (-) or right (+)
 # 'y' moves it down (-) or up (+)
-# These values are an offset from the default position.
 BUTTON_OFFSET = {'x': 0, 'y': 0}
 # -----------------------------------------------------------------------------
 
 # The main plugin class. BombSquad looks for this specifically.
-class SimpleGlovesPlugin(ba.Plugin):
+# It MUST come immediately after the '# ba_meta export...' line above.
+class MainPlugin(ba.Plugin):
     def __init__(self) -> None:
         patch_in_game_menu()
 
