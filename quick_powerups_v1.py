@@ -1,8 +1,8 @@
-# ba_meta require api 7
+# ba_meta require api 9
 # (see https://ballistica.net/wiki/meta-tag-system)
 
 """
-Quick Powerups Plugin by Priyanshu
+Quick Powerups Plugin
 A simple plugin to quickly give yourself powerups during a game.
 Inspired by the powerful Sandbox mod, but simplified for ease of use.
 """
@@ -250,25 +250,34 @@ def _new_in_game_menu_init(self: InGameMenuWindow, **kwargs: Any) -> None:
     # First, call the original function to build the menu as usual.
     _old_in_game_menu_init(self, **kwargs)
 
+    # Add a print statement to the console to confirm the plugin is running
+    ba.print("Quick Powerups Plugin: Attempting to add button to menu.")
+
     # Now, add our custom button.
     # We'll shift the existing 'Leave' button up to make space.
     if self._leave_button.exists():
+        ba.print(
+            "Quick Powerups Plugin: Found 'Leave' button, adding powerup button.")
         pos = self._leave_button.get_position()
         bui.buttonwidget(edit=self._leave_button,
                          position=(pos[0], pos[1] + 50))
 
-    # Add our button where the 'Leave' button used to be.
-    bui.buttonwidget(
-        parent=self._root_widget,
-        position=pos,
-        size=(160, 50),
-        label='Quick Powerups',
-        on_activate_call=ba.Call(QuickPowerupsWindow, self._root_widget),
-        autoselect=True,
-        scale=1.1,
-        text_scale=1.2,
-        color=(0.1, 0.5, 0.8))
+        # Add our button where the 'Leave' button used to be.
+        bui.buttonwidget(
+            parent=self._root_widget,
+            position=pos,
+            size=(160, 50),
+            label='Quick Powerups',
+            on_activate_call=ba.Call(QuickPowerupsWindow, self._root_widget),
+            autoselect=True,
+            scale=1.1,
+            text_scale=1.2,
+            color=(0.1, 0.5, 0.8))
+    else:
+        ba.print(
+            "Quick Powerups Plugin: Could not find 'Leave' button. Button not added.")
 
 
 # Overwrite the game's original function with our new one.
 InGameMenuWindow.__init__ = _new_in_game_menu_init
+
